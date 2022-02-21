@@ -1,0 +1,12 @@
+{
+  "layers_priority": [
+    {
+      "name": "Eyes",
+      "priority": 0
+    },
+    {
+      "name": "Body",
+      "priority": 1
+    }
+  ]
+}
