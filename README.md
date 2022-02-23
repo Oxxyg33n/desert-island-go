@@ -4,7 +4,7 @@
 [Make sure to stay up to date with news about our upcoming NFT collection!](https://linktr.ee/desertislandone)
 
 ## About
-This repository provides various utilities to help you build your NFT collection :joy: :
+This repository provides various utilities to help you build your NFT collection :rocket: :
 
     Generate images from source layers in specified order
     Generate ERC-721 traits
@@ -60,7 +60,7 @@ This repository provides various utilities to help you build your NFT collection
 
 Many thanks to the authors of these libraries!
 
-## Special thanks!
+## Special thanks
 
 Big thanks to the guy who wrote the post on [habr.ru](https://habr.com/ru/post/595723/) and his [github](https://github.com/golang-enthusiast/nft)!
-This library is based on the original authors' code, but was 99% re-written in my own manner :joy:
+This library is based on the original authors' code, but was 99% re-written in my own manner
