@@ -2,4 +2,5 @@ desert-island-go
 .idea
 input/*
 output/*
-layers_priority.json
+layers_configuration.json
+.env
