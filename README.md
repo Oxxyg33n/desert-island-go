@@ -49,6 +49,7 @@ This repository provides various utilities to help you build your NFT collection
 - [ ] Add DNA generation algorithm (to not generate duplicates)
 - [ ] Add ERC-721 metadata generation
 - [ ] Add IPFS support
+- [ ] Add comments to the code
 
 ## Third-party libraries used
 * [Logs](https://github.com/rs/zerolog)
