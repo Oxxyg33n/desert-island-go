@@ -9,3 +9,6 @@ test:
 
 run: build
 	@./desert-island-go
+
+validations:
+	@golangci-lint run

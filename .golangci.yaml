@@ -1,0 +1,54 @@
+# options for analysis running
+run:
+  # default concurrency is an available CPU number
+  concurrency: 4
+
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  deadline: 5m
+
+  # include test files or not, default is true
+  tests: true
+
+# settings of specific linters
+linters-settings:
+  maligned:
+    # print struct with more effective memory layout or not, false by default
+    suggest-new: true
+
+linters:
+  # do not use `enable-all`: it's deprecated and will be removed soon.
+  disable-all: true
+  enable:
+    - asciicheck
+    - deadcode
+    - depguard
+    - dogsled
+    - errcheck
+    - gocognit
+    - goconst
+    - gocritic
+    - gofmt
+    - goimports
+    - golint
+    - goprintffuncname
+    - gosimple
+    - govet
+    - ineffassign
+    - interfacer
+    - maligned
+    - misspell
+    - nakedret
+    - nestif
+    - rowserrcheck
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - whitespace
+
+issues:
+  max-same-issues: 0
