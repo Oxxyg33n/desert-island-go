@@ -46,7 +46,9 @@ This repository provides various utilities to help you build your NFT collection
 
 ## TODO
 - [x] Add image generation
-- [ ] Add DNA generation algorithm (to not generate duplicates)
+- [x] Add DNA generation algorithm (to not generate duplicates)
+  - [ ] Improve DNA algorithm to be more smart
+- [ ] Add additional configuration to be able to skip adding some layers to the end image
 - [ ] Add ERC-721 metadata generation
 - [ ] Add IPFS support
 - [ ] Add comments to the code
