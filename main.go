@@ -43,7 +43,7 @@ func main() {
 			Msg(errors.Annotate(err, "importing traits failed").Error())
 	}
 
-	dnaService := service.NewDNA(dnaRepository)
+	dnaService := service.NewDNA(dnaRepository, cfg.CollectionDNAPrefix)
 
 	generator := service.NewGenerator(cfg, traitService, dnaService)
 
@@ -55,12 +55,18 @@ func main() {
 	log.Info().
 		Msgf("Generating collection with size %d", cfg.CollectionSize)
 
-	for i := cfg.CollectionStartIndex; i <= cfg.CollectionSize; i++ {
+	var totalImagesGenerated int
+	for i := cfg.CollectionStartIndex; i <= cfg.CollectionSize; {
 		if err := generator.Generate(i); err != nil {
-			log.Fatal().
+			log.Error().
 				Msg(errors.Annotate(err, "generating image failed").Error())
+
+			continue
 		}
+
+		totalImagesGenerated++
+		i++
 	}
 
-	log.Info().Msgf("Generation took %.3f second(-s)", time.Since(startTime).Seconds())
+	log.Info().Msgf("Generation of %d images took %.3f second(-s)", totalImagesGenerated, time.Since(startTime).Seconds())
 }

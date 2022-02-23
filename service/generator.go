@@ -58,6 +58,10 @@ func (s *generator) Generate(imageIndex int) error {
 		return errors.New("traits not found")
 	}
 
+	traitsDNA := traits.ToDNA()
+
+	log.Debug().Msgf("Unique DNA generated for the traits: dna=%s", traitsDNA)
+
 	layers, err := traits.ToImageLayers()
 	if err != nil {
 		return errors.Annotate(err, "converting traits to image layers failed")
@@ -67,6 +71,10 @@ func (s *generator) Generate(imageIndex int) error {
 
 	if err := s.generateImage(imageIndex, layers); err != nil {
 		return errors.Annotate(err, "generating image failed")
+	}
+
+	if err := s.dnaService.MarkAsExisting(traitsDNA); err != nil {
+		return errors.Annotate(err, "marking dna as existing failed")
 	}
 
 	log.Debug().Msgf("Finished generating image #%d (took %.3f seconds)", imageIndex, time.Since(startTime).Seconds())

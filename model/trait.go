@@ -2,7 +2,9 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 	"image/png"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/juju/errors"
@@ -53,4 +55,15 @@ func (ts Traits) ToImageLayers() ([]ImageLayer, error) {
 	}
 
 	return layers, nil
+}
+
+func (ts Traits) ToDNA() string {
+	var dna string
+	for _, trait := range ts {
+		dna += fmt.Sprintf("%d-", trait.DNAIndex)
+	}
+
+	dna = strings.TrimSuffix(dna, "-")
+
+	return dna
 }

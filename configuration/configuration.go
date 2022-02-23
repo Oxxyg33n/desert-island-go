@@ -7,7 +7,7 @@ import (
 
 type Configuration struct {
 	CollectionSize        int    `env:"COLLECTION_SIZE" envDefault:"10"`
-	CollectionDNAPrefix   int    `env:"COLLECTION_DNA_PREFIX" envDefault:"0"`
+	CollectionDNAPrefix   string `env:"COLLECTION_DNA_PREFIX" envDefault:"0"`
 	CollectionDescription string `env:"COLLECTION_DESCRIPTION"`
 	CollectionStartIndex  int    `env:"COLLECTION_START_INDEX" envDefault:"0"`
 	CollectionOutputDir   string `env:"COLLECTION_OUTPUT_DIR" envDefault:"output"`
