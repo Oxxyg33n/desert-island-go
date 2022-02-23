@@ -6,5 +6,5 @@ type LayersPriority struct {
 
 type LayerPriority struct {
 	Name     string `json:"name"`
-	Priority string `json:"priority"`
+	Priority int    `json:"priority"`
 }

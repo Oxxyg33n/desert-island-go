@@ -1,9 +1,9 @@
 package model
 
-type Rareness int
+type Rareness string
 
 const (
-	RarenessCommon Rareness = 1
-	RarenessRare   Rareness = 2
-	RarenessEpic   Rareness = 3
+	RarenessCommon Rareness = "Common"
+	RarenessRare   Rareness = "Rare"
+	RarenessEpic   Rareness = "Epic"
 )

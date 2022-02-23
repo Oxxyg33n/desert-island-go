@@ -1,12 +1,48 @@
 {
   "layers_priority": [
     {
-      "name": "Eyes",
+      "name": "Backgrounds",
       "priority": 0
     },
     {
-      "name": "Body",
+      "name": "Base Torsos",
       "priority": 1
+    },
+    {
+      "name": "Torso Paints",
+      "priority": 2
+    },
+    {
+      "name": "Accessories (Under)",
+      "priority": 3
+    },
+    {
+      "name": "Torsos",
+      "priority": 4
+    },
+    {
+      "name": "Mouths",
+      "priority": 5
+    },
+    {
+      "name": "Hairs",
+      "priority": 6
+    },
+    {
+      "name": "Hats",
+      "priority": 7
+    },
+    {
+      "name": "Eyes",
+      "priority": 8
+    },
+    {
+      "name": "Accessories (Upper)",
+      "priority": 9
+    },
+    {
+      "name": "Sunglasses",
+      "priority": 10
     }
   ]
 }
