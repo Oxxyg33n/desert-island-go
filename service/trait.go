@@ -20,7 +20,7 @@ import (
 
 type ITrait interface {
 	Import(root string) error
-	GetRandomTraits() ([]model.Trait, error)
+	GetRandomTraits() (model.Traits, error)
 }
 
 var _ ITrait = &trait{}
@@ -42,7 +42,7 @@ func NewTrait(
 	traitRepository repository.ITrait,
 	groupRepository repository.IGroup,
 	imageWidth, imageHeight int,
-) *trait {
+) ITrait {
 	s := &trait{
 		traitRepository: traitRepository,
 		groupRepository: groupRepository,
@@ -62,7 +62,7 @@ func (s *trait) Import(root string) error {
 		return errors.Annotate(err, "finding directory failed")
 	}
 
-	if err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(root, func(path string, info os.FileInfo, walkErr error) error {
 		if info.IsDir() {
 			return nil
 		}
@@ -74,6 +74,10 @@ func (s *trait) Import(root string) error {
 		}
 
 		splitted := strings.Split(path, "/")
+		if len(splitted) < 3 {
+			return errors.New("invalid directories format, expected at least 3 elements")
+		}
+
 		groupName := splitted[1]
 		traitRarity := splitted[2]
 		traitName := strings.TrimSuffix(info.Name(), fileExtension)
@@ -116,24 +120,17 @@ func (s *trait) Import(root string) error {
 		return errors.Annotate(err, "walking path failed")
 	}
 
-	uniqueGroups, err := s.groupRepository.UniqueGroups()
-	if err != nil {
-		return errors.Annotate(err, "getting unique groups failed")
-	}
-
-	log.Debug().Msgf("%d unique groups were created", len(uniqueGroups))
-
-	var strGroups string
-	for _, group := range uniqueGroups {
-		strGroups += fmt.Sprintf("%s ", group)
-	}
-
-	log.Debug().Msgf("Groups created: %s", strGroups)
-
 	groups, err := s.groupRepository.GetAll()
 	if err != nil {
 		return errors.Annotate(err, "getting all groups failed")
 	}
+
+	var strGroups string
+	for _, group := range groups {
+		strGroups += fmt.Sprintf("%s ", group.Name)
+	}
+
+	log.Debug().Msgf("%d layer groups created: %s", len(groups), strGroups)
 
 	for _, group := range groups {
 		traits, err := s.traitRepository.GetByGroupID(group.ID)
@@ -151,7 +148,7 @@ func (s *trait) Import(root string) error {
 	return nil
 }
 
-func (s *trait) GetRandomTraits() ([]model.Trait, error) {
+func (s *trait) GetRandomTraits() (model.Traits, error) {
 	randomTraits := make([]model.Trait, 0)
 	for _, traits := range s.groupedTraits {
 		t, err := getRandomTrait(traits)
@@ -201,10 +198,8 @@ func getProbabilityDensityVector(traits []model.Trait) ([]float32, error) {
 		epicChance   = commonChance / 4
 	)
 
-	var (
-		chanceOffset  float32 = 1.00
-		commonCounter         = 0
-	)
+	chanceOffset := float32(1.00)
+	commonCounter := float32(0)
 
 	for i, t := range traits {
 		switch t.Rareness {
@@ -223,7 +218,7 @@ func getProbabilityDensityVector(traits []model.Trait) ([]float32, error) {
 
 	for i, p := range probabilityVector {
 		if p == 0 {
-			probabilityVector[i] = chanceOffset / float32(commonCounter)
+			probabilityVector[i] = chanceOffset / commonCounter
 		}
 	}
 
@@ -235,16 +230,17 @@ func getProbabilityDensityVector(traits []model.Trait) ([]float32, error) {
 }
 
 func checkProbabilityVector(vector []float32) error {
-	var (
-		sum      float32 = 0
-		checkSum float32 = 1
-	)
+	sum := float32(0)
+	checkSum := float32(1)
+
 	for _, p := range vector {
 		sum += p
 	}
+
 	if !(sum >= checkSum-0.1 || sum >= checkSum+0.1) {
-		return errors.Errorf("Expected probability vector checksum %.2f but got %.2f", checkSum, sum)
+		return errors.Errorf("expected probability vector checksum %.2f but got %.2f", checkSum, sum)
 	}
+
 	return nil
 }
 

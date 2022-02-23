@@ -2,18 +2,23 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 	"image/png"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/juju/errors"
 )
 
+type Traits []Trait
+
 type Trait struct {
-	ID       uuid.UUID `json:"id"`
-	Group    Group     `json:"group"`
-	Name     string    `json:"name"`
-	Image    []byte    `json:"image"`
-	Rareness Rareness  `json:"rareness"`
+	ID       uuid.UUID
+	Group    Group
+	Name     string
+	Image    []byte
+	Rareness Rareness
+	DNAIndex int
 }
 
 func (t *Trait) ToImageLayer() (*ImageLayer, error) {
@@ -32,4 +37,33 @@ func (t *Trait) ToImageLayer() (*ImageLayer, error) {
 		XPos:     t.Group.XPos,
 		YPos:     t.Group.YPos,
 	}, nil
+}
+
+func (ts Traits) ToImageLayers() ([]ImageLayer, error) {
+	if ts == nil {
+		return nil, nil
+	}
+
+	layers := make([]ImageLayer, len(ts))
+	for i, trait := range ts {
+		layer, err := trait.ToImageLayer()
+		if err != nil {
+			return nil, errors.Annotate(err, "converting image to layer failed")
+		}
+
+		layers[i] = *layer
+	}
+
+	return layers, nil
+}
+
+func (ts Traits) ToDNA() string {
+	var dna string
+	for _, trait := range ts {
+		dna += fmt.Sprintf("%d-", trait.DNAIndex)
+	}
+
+	dna = strings.TrimSuffix(dna, "-")
+
+	return dna
 }

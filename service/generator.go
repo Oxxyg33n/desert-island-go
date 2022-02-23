@@ -18,20 +18,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type ImageGenerator interface {
+type IGenerate interface {
 	Generate(imageIndex int) error
 }
 
-var _ ImageGenerator = &generator{}
+var _ IGenerate = &generator{}
 
 type generator struct {
-	cfg             configuration.Configuration
-	traitService    ITrait
-	dnaService      IDNA
-	outputDirExists struct{}
+	cfg          configuration.Configuration
+	traitService ITrait
+	dnaService   IDNA
 }
 
-func NewGenerator(cfg configuration.Configuration, traitService ITrait, dnaService IDNA) ImageGenerator {
+func NewGenerator(cfg configuration.Configuration, traitService ITrait, dnaService IDNA) IGenerate {
 	if _, err := os.Stat(cfg.CollectionOutputDir); os.IsNotExist(err) {
 		if err := os.Mkdir(cfg.CollectionOutputDir, 0777); err != nil {
 			log.Fatal().Msg("creating output directory failed")
@@ -46,7 +45,7 @@ func NewGenerator(cfg configuration.Configuration, traitService ITrait, dnaServi
 }
 
 func (s *generator) Generate(imageIndex int) error {
-	log.Debug().Msgf("Generating image #%d", imageIndex)
+	log.Debug().Msgf("Generating image #%d out of %d images", imageIndex, s.cfg.CollectionSize)
 
 	startTime := time.Now().UTC()
 
@@ -59,29 +58,43 @@ func (s *generator) Generate(imageIndex int) error {
 		return errors.New("traits not found")
 	}
 
-	// Convert traits to image layers.
-	layers := make([]*model.ImageLayer, len(traits))
-	for i, trait := range traits {
-		layer, err := trait.ToImageLayer()
-		if err != nil {
-			return errors.Annotate(err, "converting image to layer failed")
-		}
+	traitsDNA := traits.ToDNA()
 
-		layers[i] = layer
+	log.Debug().Msgf("Unique DNA generated for the traits: dna=%s", traitsDNA)
+
+	layers, err := traits.ToImageLayers()
+	if err != nil {
+		return errors.Annotate(err, "converting traits to image layers failed")
 	}
 
-	layers = sortByPriority(layers)
+	sortByPriority(layers)
 
+	if err := s.generateImage(imageIndex, layers); err != nil {
+		return errors.Annotate(err, "generating image failed")
+	}
+
+	if err := s.dnaService.MarkAsExisting(traitsDNA); err != nil {
+		return errors.Annotate(err, "marking dna as existing failed")
+	}
+
+	log.Debug().Msgf("Finished generating image #%d (took %.3f seconds)", imageIndex, time.Since(startTime).Seconds())
+
+	return nil
+}
+
+// private
+
+func (s *generator) generateImage(imageIndex int, layers []model.ImageLayer) error {
 	bgImg := image.NewRGBA(image.Rect(0, 0, s.cfg.ImageWidth, s.cfg.ImageHeight))
 
 	draw.Draw(bgImg, bgImg.Bounds(), &image.Uniform{C: color.Transparent}, image.Point{}, draw.Src)
 
-	for _, img := range layers {
+	for _, layer := range layers {
 		// Set the image offset.
-		offset := image.Pt(img.XPos, img.YPos)
+		offset := image.Pt(layer.XPos, layer.YPos)
 
 		// Combine the image.
-		draw.Draw(bgImg, img.Image.Bounds().Add(offset), img.Image, image.Point{}, draw.Over)
+		draw.Draw(bgImg, layer.Image.Bounds().Add(offset), layer.Image, image.Point{}, draw.Over)
 	}
 
 	buff := &bytes.Buffer{}
@@ -94,17 +107,11 @@ func (s *generator) Generate(imageIndex int) error {
 		return errors.Annotate(err, "writing file failed")
 	}
 
-	log.Debug().Msgf("Finished generating image #%d (took %.3f seconds)", imageIndex, time.Since(startTime).Seconds())
-
 	return nil
 }
 
-// private
-
-func sortByPriority(list []*model.ImageLayer) []*model.ImageLayer {
+func sortByPriority(list []model.ImageLayer) {
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].Priority < list[j].Priority
 	})
-
-	return list
 }
