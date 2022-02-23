@@ -52,6 +52,8 @@ This repository provides various utilities to help you build your NFT collection
 - [ ] Add comments to the code
 
 ## Third-party libraries used
+* [Golangci-lint](https://github.com/golangci/golangci-lint)
+  * [Installation](https://golangci-lint.run/usage/install/#local-installation)
 * [Logs](https://github.com/rs/zerolog)
 * [Environment configuration](https://github.com/caarlos0/env)
 * [Dotenv](https://github.com/joho/godotenv)
