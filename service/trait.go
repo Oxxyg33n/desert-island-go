@@ -74,6 +74,10 @@ func (s *trait) Import(root string) error {
 		}
 
 		splitted := strings.Split(path, "/")
+		if len(splitted) < 3 {
+			return errors.New("invalid directories format, expected at least 3 elements")
+		}
+
 		groupName := splitted[1]
 		traitRarity := splitted[2]
 		traitName := strings.TrimSuffix(info.Name(), fileExtension)
