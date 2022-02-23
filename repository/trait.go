@@ -15,22 +15,25 @@ type ITrait interface {
 var _ ITrait = &Trait{}
 
 type Trait struct {
-	traitByIDMap       map[uuid.UUID]model.Trait
-	traitByNameMap     map[string]model.Trait
-	traitsByGroupIDMap map[uuid.UUID][]model.Trait
+	traitByIDMap          map[uuid.UUID]model.Trait
+	traitByNameMap        map[string]model.Trait
+	traitsByGroupIDMap    map[uuid.UUID][]model.Trait
+	lastTraitIndexByGroup map[string]int
 }
 
 func NewTrait() *Trait {
 	return &Trait{
-		traitByIDMap:       make(map[uuid.UUID]model.Trait),
-		traitByNameMap:     make(map[string]model.Trait),
-		traitsByGroupIDMap: make(map[uuid.UUID][]model.Trait),
+		traitByIDMap:          make(map[uuid.UUID]model.Trait),
+		traitByNameMap:        make(map[string]model.Trait),
+		traitsByGroupIDMap:    make(map[uuid.UUID][]model.Trait),
+		lastTraitIndexByGroup: make(map[string]int),
 	}
 }
 
 func (r *Trait) Create(trait model.Trait) error {
 	r.traitByIDMap[trait.ID] = trait
 	r.traitByNameMap[trait.Name] = trait
+	r.lastTraitIndexByGroup[trait.Group.Name]++
 
 	if _, ok := r.traitsByGroupIDMap[trait.Group.ID]; !ok {
 		r.traitsByGroupIDMap[trait.Group.ID] = make([]model.Trait, 0)

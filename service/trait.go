@@ -116,24 +116,17 @@ func (s *trait) Import(root string) error {
 		return errors.Annotate(err, "walking path failed")
 	}
 
-	uniqueGroups, err := s.groupRepository.UniqueGroups()
-	if err != nil {
-		return errors.Annotate(err, "getting unique groups failed")
-	}
-
-	log.Debug().Msgf("%d unique groups were created", len(uniqueGroups))
-
-	var strGroups string
-	for _, group := range uniqueGroups {
-		strGroups += fmt.Sprintf("%s ", group)
-	}
-
-	log.Debug().Msgf("Groups created: %s", strGroups)
-
 	groups, err := s.groupRepository.GetAll()
 	if err != nil {
 		return errors.Annotate(err, "getting all groups failed")
 	}
+
+	var strGroups string
+	for _, group := range groups {
+		strGroups += fmt.Sprintf("%s ", group.Name)
+	}
+
+	log.Debug().Msgf("%d layer groups created: %s", len(groups), strGroups)
 
 	for _, group := range groups {
 		traits, err := s.traitRepository.GetByGroupID(group.ID)

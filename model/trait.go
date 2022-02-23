@@ -9,11 +9,12 @@ import (
 )
 
 type Trait struct {
-	ID       uuid.UUID `json:"id"`
-	Group    Group     `json:"group"`
-	Name     string    `json:"name"`
-	Image    []byte    `json:"image"`
-	Rareness Rareness  `json:"rareness"`
+	ID       uuid.UUID
+	Group    Group
+	Name     string
+	Image    []byte
+	Rareness Rareness
+	DNAIndex int
 }
 
 func (t *Trait) ToImageLayer() (*ImageLayer, error) {

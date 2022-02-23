@@ -45,7 +45,7 @@ func NewGenerator(cfg configuration.Configuration, traitService ITrait, dnaServi
 }
 
 func (s *generator) Generate(imageIndex int) error {
-	log.Debug().Msgf("Generating image #%d", imageIndex)
+	log.Debug().Msgf("Generating image #%d out of %d images", imageIndex, s.cfg.CollectionSize)
 
 	startTime := time.Now().UTC()
 
