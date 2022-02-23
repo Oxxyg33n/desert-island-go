@@ -68,18 +68,30 @@ func (s *generator) Generate(imageIndex int) error {
 		layers[i] = layer
 	}
 
-	layers = sortByPriority(layers)
+	sortByPriority(layers)
 
+	if err := s.generateImage(layers); err != nil {
+		return errors.Annotate(err, "generating image failed")
+	}
+
+	log.Debug().Msgf("Finished generating image #%d (took %.3f seconds)", imageIndex, time.Since(startTime).Seconds())
+
+	return nil
+}
+
+// private
+
+func (s *generator) generateImage(layers []*model.ImageLayer) error {
 	bgImg := image.NewRGBA(image.Rect(0, 0, s.cfg.ImageWidth, s.cfg.ImageHeight))
 
 	draw.Draw(bgImg, bgImg.Bounds(), &image.Uniform{C: color.Transparent}, image.Point{}, draw.Src)
 
-	for _, img := range layers {
+	for _, layer := range layers {
 		// Set the image offset.
-		offset := image.Pt(img.XPos, img.YPos)
+		offset := image.Pt(layer.XPos, layer.YPos)
 
 		// Combine the image.
-		draw.Draw(bgImg, img.Image.Bounds().Add(offset), img.Image, image.Point{}, draw.Over)
+		draw.Draw(bgImg, layer.Image.Bounds().Add(offset), layer.Image, image.Point{}, draw.Over)
 	}
 
 	buff := &bytes.Buffer{}
@@ -92,17 +104,11 @@ func (s *generator) Generate(imageIndex int) error {
 		return errors.Annotate(err, "writing file failed")
 	}
 
-	log.Debug().Msgf("Finished generating image #%d (took %.3f seconds)", imageIndex, time.Since(startTime).Seconds())
-
 	return nil
 }
 
-// private
-
-func sortByPriority(list []*model.ImageLayer) []*model.ImageLayer {
+func sortByPriority(list []*model.ImageLayer) {
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].Priority < list[j].Priority
 	})
-
-	return list
 }
