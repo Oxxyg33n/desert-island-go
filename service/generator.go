@@ -18,20 +18,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type ImageGenerator interface {
+type IGenerator interface {
 	Generate(imageIndex int) error
 }
 
-var _ ImageGenerator = &generator{}
+var _ IGenerator = &generator{}
 
 type generator struct {
-	cfg             configuration.Configuration
-	traitService    ITrait
-	dnaService      IDNA
-	outputDirExists struct{}
+	cfg          configuration.Configuration
+	traitService ITrait
+	dnaService   IDNA
 }
 
-func NewGenerator(cfg configuration.Configuration, traitService ITrait, dnaService IDNA) ImageGenerator {
+func NewGenerator(cfg configuration.Configuration, traitService ITrait, dnaService IDNA) *generator {
 	if _, err := os.Stat(cfg.CollectionOutputDir); os.IsNotExist(err) {
 		if err := os.Mkdir(cfg.CollectionOutputDir, 0777); err != nil {
 			log.Fatal().Msg("creating output directory failed")
@@ -59,7 +58,6 @@ func (s *generator) Generate(imageIndex int) error {
 		return errors.New("traits not found")
 	}
 
-	// Convert traits to image layers.
 	layers := make([]*model.ImageLayer, len(traits))
 	for i, trait := range traits {
 		layer, err := trait.ToImageLayer()
