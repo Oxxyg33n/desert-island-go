@@ -15,7 +15,7 @@ type dna struct {
 	dnaRepository repository.IDNA
 }
 
-func NewDNA(dnaRepository repository.IDNA) *dna {
+func NewDNA(dnaRepository repository.IDNA) IDNA {
 	return &dna{
 		dnaRepository: dnaRepository,
 	}

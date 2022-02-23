@@ -11,7 +11,7 @@ type dnaRepository struct {
 	dnaMap map[string]struct{}
 }
 
-func NewDNA() *dnaRepository {
+func NewDNA() IDNA {
 	return &dnaRepository{
 		dnaMap: make(map[string]struct{}),
 	}

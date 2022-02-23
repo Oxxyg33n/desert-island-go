@@ -21,7 +21,7 @@ type Trait struct {
 	lastTraitIndexByGroup map[string]int
 }
 
-func NewTrait() *Trait {
+func NewTrait() ITrait {
 	return &Trait{
 		traitByIDMap:          make(map[uuid.UUID]model.Trait),
 		traitByNameMap:        make(map[string]model.Trait),

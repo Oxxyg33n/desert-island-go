@@ -2,18 +2,10 @@
 run:
   # default concurrency is an available CPU number
   concurrency: 4
-
   # timeout for analysis, e.g. 30s, 5m, default is 1m
   deadline: 5m
-
   # include test files or not, default is true
   tests: true
-
-# settings of specific linters
-linters-settings:
-  maligned:
-    # print struct with more effective memory layout or not, false by default
-    suggest-new: true
 
 linters:
   # do not use `enable-all`: it's deprecated and will be removed soon.
@@ -29,13 +21,11 @@ linters:
     - gocritic
     - gofmt
     - goimports
-    - golint
+    - revive
     - goprintffuncname
     - gosimple
     - govet
     - ineffassign
-    - interfacer
-    - maligned
     - misspell
     - nakedret
     - nestif

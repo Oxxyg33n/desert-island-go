@@ -20,7 +20,7 @@ type group struct {
 	groupByNameMap map[string]model.Group
 }
 
-func NewGroup() *group {
+func NewGroup() IGroup {
 	return &group{
 		groupByIDMap:   make(map[uuid.UUID]model.Group),
 		groupByNameMap: make(map[string]model.Group),
