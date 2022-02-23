@@ -60,7 +60,6 @@ func main() {
 			log.Fatal().
 				Msg(errors.Annotate(err, "generating image failed").Error())
 		}
-
 	}
 
 	log.Info().Msgf("Generation took %.3f second(-s)", time.Since(startTime).Seconds())
