@@ -8,6 +8,8 @@ import (
 	"github.com/juju/errors"
 )
 
+type Traits []Trait
+
 type Trait struct {
 	ID       uuid.UUID
 	Group    Group
@@ -33,4 +35,22 @@ func (t *Trait) ToImageLayer() (*ImageLayer, error) {
 		XPos:     t.Group.XPos,
 		YPos:     t.Group.YPos,
 	}, nil
+}
+
+func (ts Traits) ToImageLayers() ([]ImageLayer, error) {
+	if ts == nil {
+		return nil, nil
+	}
+
+	layers := make([]ImageLayer, len(ts))
+	for i, trait := range ts {
+		layer, err := trait.ToImageLayer()
+		if err != nil {
+			return nil, errors.Annotate(err, "converting image to layer failed")
+		}
+
+		layers[i] = *layer
+	}
+
+	return layers, nil
 }

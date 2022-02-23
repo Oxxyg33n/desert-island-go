@@ -18,11 +18,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type IGenerator interface {
+type IGenerate interface {
 	Generate(imageIndex int) error
 }
 
-var _ IGenerator = &generator{}
+var _ IGenerate = &generator{}
 
 type generator struct {
 	cfg          configuration.Configuration
@@ -30,7 +30,7 @@ type generator struct {
 	dnaService   IDNA
 }
 
-func NewGenerator(cfg configuration.Configuration, traitService ITrait, dnaService IDNA) *generator {
+func NewGenerator(cfg configuration.Configuration, traitService ITrait, dnaService IDNA) IGenerate {
 	if _, err := os.Stat(cfg.CollectionOutputDir); os.IsNotExist(err) {
 		if err := os.Mkdir(cfg.CollectionOutputDir, 0777); err != nil {
 			log.Fatal().Msg("creating output directory failed")
@@ -58,19 +58,14 @@ func (s *generator) Generate(imageIndex int) error {
 		return errors.New("traits not found")
 	}
 
-	layers := make([]*model.ImageLayer, len(traits))
-	for i, trait := range traits {
-		layer, err := trait.ToImageLayer()
-		if err != nil {
-			return errors.Annotate(err, "converting image to layer failed")
-		}
-
-		layers[i] = layer
+	layers, err := traits.ToImageLayers()
+	if err != nil {
+		return errors.Annotate(err, "converting traits to image layers failed")
 	}
 
 	sortByPriority(layers)
 
-	if err := s.generateImage(layers); err != nil {
+	if err := s.generateImage(imageIndex, layers); err != nil {
 		return errors.Annotate(err, "generating image failed")
 	}
 
@@ -81,7 +76,7 @@ func (s *generator) Generate(imageIndex int) error {
 
 // private
 
-func (s *generator) generateImage(layers []*model.ImageLayer) error {
+func (s *generator) generateImage(imageIndex int, layers []model.ImageLayer) error {
 	bgImg := image.NewRGBA(image.Rect(0, 0, s.cfg.ImageWidth, s.cfg.ImageHeight))
 
 	draw.Draw(bgImg, bgImg.Bounds(), &image.Uniform{C: color.Transparent}, image.Point{}, draw.Src)
@@ -107,7 +102,7 @@ func (s *generator) generateImage(layers []*model.ImageLayer) error {
 	return nil
 }
 
-func sortByPriority(list []*model.ImageLayer) {
+func sortByPriority(list []model.ImageLayer) {
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].Priority < list[j].Priority
 	})
