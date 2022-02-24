@@ -46,12 +46,12 @@ This repository provides various utilities to help you build your NFT collection
           "skip_multiple": false,
           "groups": [
             {
-              "name":"Backgrounds",
+              "name":"Background",
               "priority": 0,
               "can_skip": false
             },
             {
-              "name":"Base Torsos",
+              "name":"Base Torso",
               "priority": 1,
               "can_skip": true,
               "skip_chance": 20.5
@@ -74,6 +74,7 @@ This repository provides various utilities to help you build your NFT collection
 - [ ] Refactor traits chance generation algorithm
 - [ ] Add CLI command to generate collection_configuration.json
 - [ ] Add comments to the code
+- [ ] Concurrency support for faster generation
 
 ## Third-party libraries used
 * [Golangci-lint](https://github.com/golangci/golangci-lint)

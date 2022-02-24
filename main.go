@@ -44,8 +44,8 @@ func main() {
 	}
 
 	dnaService := service.NewDNA(dnaRepository, cfg.CollectionDNAPrefix)
-
-	generator := service.NewGenerator(cfg, traitService, dnaService)
+	metadataService := service.NewMetadata(cfg.CollectionOutputDir)
+	generator := service.NewGenerator(cfg, traitService, dnaService, metadataService)
 
 	// Run generator
 	startTime := time.Now().UTC()
