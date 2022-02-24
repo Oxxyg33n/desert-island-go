@@ -93,7 +93,7 @@ func (s *trait) Import(root string) error {
 
 		group, err := s.groupRepository.GetByName(groupName)
 		if err != nil {
-			log.Debug().Msgf("TraitGroup not found, creating new one: group=%s", groupName)
+			log.Debug().Msgf("Trait group not found, creating new one: group=%s", groupName)
 			newGroup := s.groupRepository.Create(model.TraitGroup{
 				ID:         uuid.New(),
 				CanSkip:    s.groupCfgByName[groupName].CanSkip,

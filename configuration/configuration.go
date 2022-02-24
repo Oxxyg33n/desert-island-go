@@ -15,6 +15,10 @@ type Configuration struct {
 
 	ImageWidth  int `env:"IMAGE_WIDTH" envDefault:"1000"`
 	ImageHeight int `env:"IMAGE_HEIGHT" envDefault:"1000"`
+
+	PinataUploadEnabled bool   `env:"PINATA_UPLOAD_ENABLED" envDefault:"false"`
+	PinataAPISecret     string `env:"PINATA_API_SECRET"`
+	PinataAPIKey        string `env:"PINATA_API_KEY"`
 }
 
 func (c *Configuration) New() error {
