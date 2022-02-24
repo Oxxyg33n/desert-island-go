@@ -25,12 +25,18 @@ type IGenerate interface {
 var _ IGenerate = &generator{}
 
 type generator struct {
-	cfg          configuration.Configuration
-	traitService ITrait
-	dnaService   IDNA
+	cfg             configuration.Configuration
+	traitService    ITrait
+	dnaService      IDNA
+	metadataService IMetadata
 }
 
-func NewGenerator(cfg configuration.Configuration, traitService ITrait, dnaService IDNA) IGenerate {
+func NewGenerator(
+	cfg configuration.Configuration,
+	traitService ITrait,
+	dnaService IDNA,
+	metadataService IMetadata,
+) IGenerate {
 	if _, err := os.Stat(cfg.CollectionOutputDir); os.IsNotExist(err) {
 		if err := os.Mkdir(cfg.CollectionOutputDir, 0777); err != nil {
 			log.Fatal().Msg("creating output directory failed")
@@ -38,9 +44,10 @@ func NewGenerator(cfg configuration.Configuration, traitService ITrait, dnaServi
 	}
 
 	return &generator{
-		cfg:          cfg,
-		traitService: traitService,
-		dnaService:   dnaService,
+		cfg:             cfg,
+		traitService:    traitService,
+		dnaService:      dnaService,
+		metadataService: metadataService,
 	}
 }
 
@@ -71,6 +78,10 @@ func (s *generator) Generate(imageIndex int) error {
 
 	if err := s.generateImage(imageIndex, layers); err != nil {
 		return errors.Annotate(err, "generating image failed")
+	}
+
+	if err := s.metadataService.Generate(imageIndex, traits); err != nil {
+		return errors.Annotate(err, "generating ERC721 metadata failed")
 	}
 
 	if err := s.dnaService.MarkAsExisting(traitsDNA); err != nil {
