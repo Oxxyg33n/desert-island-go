@@ -24,31 +24,55 @@ This repository provides various utilities to help you build your NFT collection
                 Rare/1.png
                 Epic/2.png
     ```
-* Add `layers_priority.json` file to the root of the project
+* Add `collection_configuration.json` file to the root of the project
   * Add JSON configuration for layers priority:
   ```json
       {
-        "layers_priority": [
+        "rareness": [
           {
-            "name": "Background",
-            "priority": 0
+            "name": "Common",
+            "chance": 85
           },
           {
-            "name": "Torso",
-            "priority": 1
+            "name": "Rare",
+            "chance" :10
+          },
+          {
+            "name": "Epic",
+            "chance": 5
           }
-        ]
+        ],
+        "layers": {
+          "skip_multiple": false,
+          "groups": [
+            {
+              "name":"Backgrounds",
+              "priority": 0,
+              "can_skip": false
+            },
+            {
+              "name":"Base Torsos",
+              "priority": 1,
+              "can_skip": true,
+              "skip_chance": 20.5
+            }
+          ]
+        }
       }
     ```
     * Make sure that priority is set in correct order, it will be used to put layers in correct order
-* Make sure to setup environment variables using `.env` file
+* Make sure to setup environment variables using `.env.sample` file and rename it to `.env` afterwards
 * Run command `make run` to start collection generation
 
 ## TODO
 - [x] Add image generation
-- [ ] Add DNA generation algorithm (to not generate duplicates)
+- [x] Add DNA generation algorithm (to not generate duplicates)
+  - [ ] Improve DNA algorithm to be more smart
+- [x] Add additional configuration to be able to skip adding some layers to the end image
 - [ ] Add ERC-721 metadata generation
 - [ ] Add IPFS support
+- [ ] Refactor traits chance generation algorithm
+- [ ] Add CLI command to generate collection_configuration.json
 - [ ] Add comments to the code
 
 ## Third-party libraries used

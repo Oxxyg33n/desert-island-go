@@ -14,7 +14,7 @@ type Traits []Trait
 
 type Trait struct {
 	ID       uuid.UUID
-	Group    Group
+	Group    TraitGroup
 	Name     string
 	Image    []byte
 	Rareness Rareness
@@ -34,8 +34,6 @@ func (t *Trait) ToImageLayer() (*ImageLayer, error) {
 	return &ImageLayer{
 		Image:    img,
 		Priority: t.Group.Priority,
-		XPos:     t.Group.XPos,
-		YPos:     t.Group.YPos,
 	}, nil
 }
 

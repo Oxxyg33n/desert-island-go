@@ -90,11 +90,7 @@ func (s *generator) generateImage(imageIndex int, layers []model.ImageLayer) err
 	draw.Draw(bgImg, bgImg.Bounds(), &image.Uniform{C: color.Transparent}, image.Point{}, draw.Src)
 
 	for _, layer := range layers {
-		// Set the image offset.
-		offset := image.Pt(layer.XPos, layer.YPos)
-
-		// Combine the image.
-		draw.Draw(bgImg, layer.Image.Bounds().Add(offset), layer.Image, image.Point{}, draw.Over)
+		draw.Draw(bgImg, layer.Image.Bounds(), layer.Image, image.Point{}, draw.Over)
 	}
 
 	buff := &bytes.Buffer{}

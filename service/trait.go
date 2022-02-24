@@ -26,15 +26,18 @@ type ITrait interface {
 var _ ITrait = &trait{}
 
 type trait struct {
-	priorityByGroup map[string]int
 	groupRepository repository.IGroup
 	traitRepository repository.ITrait
+
+	skipMultipleLayers bool
+
+	groupCfgByName map[string]model.GroupConfiguration
 
 	// Width and height that will be used to resize images
 	imageWidth, imageHeight int
 
-	// Traits grouped by group ID
-	groupedTraits map[uuid.UUID][]model.Trait
+	// Traits grouped by group
+	groupedTraits map[model.TraitGroup][]model.Trait
 }
 
 // NewTrait creates new Trait service and loads priority configuration from JSON file.
@@ -49,10 +52,11 @@ func NewTrait(
 		imageWidth:      imageWidth,
 		imageHeight:     imageHeight,
 
-		groupedTraits: make(map[uuid.UUID][]model.Trait),
+		groupedTraits:  make(map[model.TraitGroup][]model.Trait),
+		groupCfgByName: make(map[string]model.GroupConfiguration),
 	}
 
-	s.loadPriorityConfiguration()
+	s.loadCollectionConfiguration()
 
 	return s
 }
@@ -84,11 +88,13 @@ func (s *trait) Import(root string) error {
 
 		group, err := s.groupRepository.GetByName(groupName)
 		if err != nil {
-			log.Debug().Msgf("Group not found, creating new one: group=%s", groupName)
-			newGroup := s.groupRepository.Create(model.Group{
-				ID:       uuid.New(),
-				Name:     groupName,
-				Priority: s.priorityByGroup[groupName],
+			log.Debug().Msgf("TraitGroup not found, creating new one: group=%s", groupName)
+			newGroup := s.groupRepository.Create(model.TraitGroup{
+				ID:         uuid.New(),
+				CanSkip:    s.groupCfgByName[groupName].CanSkip,
+				SkipChance: s.groupCfgByName[groupName].SkipChance,
+				Name:       groupName,
+				Priority:   s.groupCfgByName[groupName].Priority,
 			})
 
 			group = &newGroup
@@ -142,15 +148,24 @@ func (s *trait) Import(root string) error {
 			return errors.Errorf("no traits found for group: group=%s", group.Name)
 		}
 
-		s.groupedTraits[group.ID] = traits
+		s.groupedTraits[group] = traits
 	}
 
 	return nil
 }
 
 func (s *trait) GetRandomTraits() (model.Traits, error) {
+	mustSkip := false
 	randomTraits := make([]model.Trait, 0)
-	for _, traits := range s.groupedTraits {
+	for group, traits := range s.groupedTraits {
+		if !mustSkip && s.skipGroup(group) {
+			if !s.skipMultipleLayers {
+				mustSkip = true
+			}
+
+			continue
+		}
+
 		t, err := getRandomTrait(traits)
 		if err != nil {
 			return nil, errors.Annotate(err, "getting random trait failed")
@@ -160,6 +175,32 @@ func (s *trait) GetRandomTraits() (model.Traits, error) {
 	}
 
 	return randomTraits, nil
+}
+
+// private
+
+func (s *trait) skipGroup(group model.TraitGroup) bool {
+	// Check if group exists in configuration,
+	// if not then skip the group.
+	groupConfiguration, ok := s.groupCfgByName[group.Name]
+	if !ok {
+		return true
+	}
+
+	// Check if group can be skipped,
+	// if not then do not skip layer
+	if canSkip := groupConfiguration.CanSkip; !canSkip {
+		return false
+	}
+
+	// Generate random float32 in min 0, max 100 range and check it against skipping chance
+	chance := groupConfiguration.SkipChance
+	r := rand.Float32() * 100 // 100% maximum
+	if r <= chance {
+		return true
+	}
+
+	return false
 }
 
 func getRandomTrait(traits []model.Trait) (*model.Trait, error) {
@@ -187,14 +228,12 @@ func getRandomTrait(traits []model.Trait) (*model.Trait, error) {
 // private
 
 func getProbabilityDensityVector(traits []model.Trait) ([]float32, error) {
-	var (
-		traitsLen         = len(traits)
-		probabilityVector = make([]float32, traitsLen)
-	)
+	traitsLen := len(traits)
+	probabilityVector := make([]float32, traitsLen)
 
 	var (
 		commonChance = float32(100/traitsLen) / 100
-		rareChance   = commonChance / 2
+		rareChance   = commonChance / 3
 		epicChance   = commonChance / 4
 	)
 
@@ -256,19 +295,26 @@ func sample(cdf []float32) int {
 	return bucket
 }
 
-func (s *trait) loadPriorityConfiguration() {
-	b, err := os.ReadFile("layers_priority.json")
+func (s *trait) loadCollectionConfiguration() {
+	b, err := os.ReadFile("collection_configuration.json")
 	if err != nil {
-		log.Fatal().Msg(errors.Annotate(err, "reading layers priority configuration file failed").Error())
+		log.Fatal().Msg(errors.Annotate(err, "reading collection configuration file failed").Error())
 	}
 
-	var layersPriority model.LayersPriority
-	if err := json.Unmarshal(b, &layersPriority); err != nil {
+	var collectionConfiguration model.CollectionConfiguration
+	if err := json.Unmarshal(b, &collectionConfiguration); err != nil {
 		log.Fatal().Msg(errors.Annotate(err, "unmarshalling json failed").Error())
 	}
 
-	s.priorityByGroup = make(map[string]int, len(layersPriority.Layers))
-	for _, layerPriority := range layersPriority.Layers {
-		s.priorityByGroup[layerPriority.Name] = layerPriority.Priority
+	s.groupCfgByName = make(map[string]model.GroupConfiguration, len(collectionConfiguration.Layers.Groups))
+	for _, cfg := range collectionConfiguration.Layers.Groups {
+		s.groupCfgByName[cfg.Name] = cfg
 	}
+
+	s.skipMultipleLayers = collectionConfiguration.Layers.SkipMultiple
+}
+
+func init() {
+	// Seed randomizer on each run
+	rand.Seed(time.Now().UnixNano())
 }
