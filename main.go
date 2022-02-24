@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Oxxyg33n/desert-island-go/configuration"
+	"github.com/Oxxyg33n/desert-island-go/pinata"
 	"github.com/Oxxyg33n/desert-island-go/repository"
 	"github.com/Oxxyg33n/desert-island-go/service"
 	"github.com/joho/godotenv"
@@ -46,6 +47,7 @@ func main() {
 	dnaService := service.NewDNA(dnaRepository, cfg.CollectionDNAPrefix)
 	metadataService := service.NewMetadata(cfg.CollectionOutputDir)
 	generator := service.NewGenerator(cfg, traitService, dnaService, metadataService)
+	ipfs := pinata.NewPinata(cfg.PinataAPIKey, cfg.PinataAPISecret, cfg.CollectionOutputDir)
 
 	// Run generator
 	startTime := time.Now().UTC()
@@ -69,4 +71,18 @@ func main() {
 	}
 
 	log.Info().Msgf("Generation of %d images took %.3f second(-s)", totalImagesGenerated, time.Since(startTime).Seconds())
+
+	if cfg.PinataUploadEnabled {
+		startTime = time.Now().UTC()
+		log.Info().
+			Msgf("Uploading metadata to Pinata started at %s", startTime.Format("2006-01-02 15:04:05"))
+
+		if err := ipfs.Upload(); err != nil {
+			log.Fatal().
+				Msg(errors.Annotate(err, "uploading metadata to Pinata failed").Error())
+		}
+
+		log.Info().
+			Msgf("Finished uploading metadata to Pinata in %.3f seconds", time.Since(startTime).Seconds())
+	}
 }
