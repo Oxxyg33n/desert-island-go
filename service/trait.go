@@ -18,6 +18,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func init() {
+	// Seed randomizer on each run
+	rand.Seed(time.Now().UnixNano())
+}
+
 type ITrait interface {
 	Import(root string) error
 	GetRandomTraits() (model.Traits, error)
@@ -193,14 +198,11 @@ func (s *trait) skipGroup(group model.TraitGroup) bool {
 		return false
 	}
 
-	// Generate random float32 in min 0, max 100 range and check it against skipping chance
 	chance := groupConfiguration.SkipChance
+	// Generate random float32 in min 0, max 100 range and check it against skipping chance
 	r := rand.Float32() * 100 // 100% maximum
-	if r <= chance {
-		return true
-	}
 
-	return false
+	return r <= chance
 }
 
 func getRandomTrait(traits []model.Trait) (*model.Trait, error) {
@@ -312,9 +314,4 @@ func (s *trait) loadCollectionConfiguration() {
 	}
 
 	s.skipMultipleLayers = collectionConfiguration.Layers.SkipMultiple
-}
-
-func init() {
-	// Seed randomizer on each run
-	rand.Seed(time.Now().UnixNano())
 }

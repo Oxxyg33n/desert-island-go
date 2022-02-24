@@ -25,7 +25,7 @@ This repository provides various utilities to help you build your NFT collection
                 Epic/2.png
     ```
 * Add `collection_configuration.json` file to the root of the project
-  * Add JSON configuration for layers priority:
+  * JSON configuration must be in the following format:
   ```json
       {
         "rareness": [
