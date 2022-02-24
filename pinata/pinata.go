@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/Oxxyg33n/desert-island-go/model"
@@ -44,7 +43,7 @@ func NewPinata(apiKey, apiSecret, inputDir string) IPFS {
 }
 
 func (s *pinata) Upload() error {
-	var files []file
+	var files []*file
 	if err := filepath.Walk(s.inputDir, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() {
 			return nil
@@ -55,7 +54,7 @@ func (s *pinata) Upload() error {
 			return nil
 		}
 
-		files = append(files, file{
+		files = append(files, &file{
 			path: path,
 			name: fileName,
 		})
@@ -67,27 +66,10 @@ func (s *pinata) Upload() error {
 
 	log.Debug().Msgf("Prepared %d files to upload", len(files))
 
-	wg := sync.WaitGroup{}
-	poolSize := 10
-	channel := make(chan file, poolSize)
-
-	for i := 0; i < poolSize; i++ {
-		wg.Add(1)
-
-		go func() {
-			for p := range channel {
-				if err := s.uploadImage(p); err != nil {
-					log.Fatal().
-						Msgf("uploading image failed")
-				}
-			}
-
-			defer wg.Done()
-		}()
-	}
-
-	for _, p := range files {
-		channel <- p
+	for _, f := range files {
+		if err := s.uploadImage(f); err != nil {
+			return errors.Annotate(err, "uploading image failed")
+		}
 	}
 
 	return nil
@@ -100,7 +82,7 @@ type file struct {
 	name string
 }
 
-func (s *pinata) uploadImage(f file) error {
+func (s *pinata) uploadImage(f *file) error {
 	key := strings.TrimSuffix(f.name, filepath.Ext(f.name))
 
 	b, err := ioutil.ReadFile(f.path)
@@ -157,6 +139,25 @@ func (s *pinata) pinFile(fileName string, data []byte) (string, error) {
 
 	if _, err := fileWriter.Write(data); err != nil {
 		return "", errors.Annotate(err, "writing data failed")
+	}
+
+	fileWriter, err = bodyWriter.CreateFormField("pinataOptions")
+	if err != nil {
+		return "", errors.Annotate(err, "creating form field failed")
+	}
+
+	pinataOptions := pinatamodel.Options{
+		WrapWithDirectory: false,
+		CIDVersion:        pinatamodel.CIDVersion1,
+	}
+
+	b, err := json.Marshal(pinataOptions)
+	if err != nil {
+		return "", errors.Annotate(err, "marshalling json failed")
+	}
+
+	if _, err := fileWriter.Write(b); err != nil {
+		return "", errors.Annotate(err, "writing field failed")
 	}
 
 	contentType := bodyWriter.FormDataContentType()
