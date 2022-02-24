@@ -2,5 +2,5 @@ desert-island-go
 .idea
 input/*
 output/*
-layers_configuration.json
+collection_configuration.json
 .env

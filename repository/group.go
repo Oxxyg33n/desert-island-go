@@ -7,34 +7,34 @@ import (
 )
 
 type IGroup interface {
-	Create(trait model.Group) model.Group
-	GetByID(id uuid.UUID) (*model.Group, error)
-	GetByName(name string) (*model.Group, error)
-	GetAll() ([]model.Group, error)
+	Create(trait model.TraitGroup) model.TraitGroup
+	GetByID(id uuid.UUID) (*model.TraitGroup, error)
+	GetByName(name string) (*model.TraitGroup, error)
+	GetAll() ([]model.TraitGroup, error)
 }
 
 var _ IGroup = &group{}
 
 type group struct {
-	groupByIDMap   map[uuid.UUID]model.Group
-	groupByNameMap map[string]model.Group
+	groupByIDMap   map[uuid.UUID]model.TraitGroup
+	groupByNameMap map[string]model.TraitGroup
 }
 
 func NewGroup() IGroup {
 	return &group{
-		groupByIDMap:   make(map[uuid.UUID]model.Group),
-		groupByNameMap: make(map[string]model.Group),
+		groupByIDMap:   make(map[uuid.UUID]model.TraitGroup),
+		groupByNameMap: make(map[string]model.TraitGroup),
 	}
 }
 
-func (r *group) Create(group model.Group) model.Group {
+func (r *group) Create(group model.TraitGroup) model.TraitGroup {
 	r.groupByIDMap[group.ID] = group
 	r.groupByNameMap[group.Name] = group
 
 	return group
 }
 
-func (r *group) GetByID(groupID uuid.UUID) (*model.Group, error) {
+func (r *group) GetByID(groupID uuid.UUID) (*model.TraitGroup, error) {
 	foundGroup, ok := r.groupByIDMap[groupID]
 	if !ok {
 		return nil, errors.New("getting group by ID failed")
@@ -43,7 +43,7 @@ func (r *group) GetByID(groupID uuid.UUID) (*model.Group, error) {
 	return &foundGroup, nil
 }
 
-func (r *group) GetByName(name string) (*model.Group, error) {
+func (r *group) GetByName(name string) (*model.TraitGroup, error) {
 	foundGroup, ok := r.groupByNameMap[name]
 	if !ok {
 		return nil, errors.New("getting group by name failed")
@@ -52,12 +52,12 @@ func (r *group) GetByName(name string) (*model.Group, error) {
 	return &foundGroup, nil
 }
 
-func (r *group) GetAll() ([]model.Group, error) {
+func (r *group) GetAll() ([]model.TraitGroup, error) {
 	if len(r.groupByIDMap) == 0 {
 		return nil, errors.New("no groups found")
 	}
 
-	var groups []model.Group
+	var groups []model.TraitGroup
 	for _, g := range r.groupByIDMap {
 		groups = append(groups, g)
 	}
