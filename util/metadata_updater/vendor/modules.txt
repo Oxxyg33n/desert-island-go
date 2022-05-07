@@ -1,0 +1,15 @@
+# github.com/Oxxyg33n/desert-island-go v0.0.0-20220224194903-7c8a915b61ad
+## explicit; go 1.16
+github.com/Oxxyg33n/desert-island-go/model
+# github.com/google/uuid v1.3.0
+## explicit
+github.com/google/uuid
+# github.com/juju/errors v0.0.0-20220331221717-b38fca44723b
+## explicit; go 1.17
+github.com/juju/errors
+# github.com/rs/zerolog v1.26.1
+## explicit; go 1.15
+github.com/rs/zerolog
+github.com/rs/zerolog/internal/cbor
+github.com/rs/zerolog/internal/json
+github.com/rs/zerolog/log

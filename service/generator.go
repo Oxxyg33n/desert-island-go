@@ -37,18 +37,17 @@ func NewGenerator(
 	dnaService IDNA,
 	metadataService IMetadata,
 ) IGenerate {
-	if _, err := os.Stat(cfg.CollectionOutputDir); os.IsNotExist(err) {
-		if err := os.Mkdir(cfg.CollectionOutputDir, 0777); err != nil {
-			log.Fatal().Msg("creating output directory failed")
-		}
-	}
 
-	return &generator{
+	s := &generator{
 		cfg:             cfg,
 		traitService:    traitService,
 		dnaService:      dnaService,
 		metadataService: metadataService,
 	}
+
+	s.initOutputDirectories()
+
+	return s
 }
 
 func (s *generator) Generate(imageIndex int) error {
@@ -109,7 +108,7 @@ func (s *generator) generateImage(imageIndex int, layers []model.ImageLayer) err
 		return errors.Annotate(err, "encoding image to png failed")
 	}
 
-	fileName := filepath.Join(s.cfg.CollectionOutputDir, fmt.Sprintf("%d.png", imageIndex))
+	fileName := filepath.Join(s.cfg.CollectionOutputDir, "images", fmt.Sprintf("%d.png", imageIndex))
 	if err := os.WriteFile(fileName, buff.Bytes(), 0777); err != nil {
 		return errors.Annotate(err, "writing file failed")
 	}
@@ -121,4 +120,24 @@ func sortByPriority(list []model.ImageLayer) {
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].Priority < list[j].Priority
 	})
+}
+
+func (s *generator) initOutputDirectories() {
+	if _, err := os.Stat(s.cfg.CollectionOutputDir); os.IsNotExist(err) {
+		if err := os.Mkdir(s.cfg.CollectionOutputDir, 0777); err != nil {
+			log.Fatal().Msg("creating images output directory failed")
+		}
+
+		if err := os.Mkdir(filepath.Join(s.cfg.CollectionOutputDir, "images"), 0777); err != nil {
+			log.Fatal().Msg("creating images output directory failed")
+		}
+
+		if err := os.Mkdir(filepath.Join(s.cfg.CollectionOutputDir, "traits"), 0777); err != nil {
+			log.Fatal().Msg("creating traits output directory failed")
+		}
+
+		if err := os.Mkdir(filepath.Join(s.cfg.CollectionOutputDir, "metadata"), 0777); err != nil {
+			log.Fatal().Msg("creating metadata output directory failed")
+		}
+	}
 }

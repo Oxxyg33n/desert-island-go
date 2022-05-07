@@ -45,7 +45,7 @@ func main() {
 	}
 
 	dnaService := service.NewDNA(dnaRepository, cfg.CollectionDNAPrefix)
-	metadataService := service.NewMetadata(cfg.CollectionOutputDir)
+	metadataService := service.NewMetadata(cfg)
 	generator := service.NewGenerator(cfg, traitService, dnaService, metadataService)
 	ipfs := pinata.NewPinata(cfg.PinataAPIKey, cfg.PinataAPISecret, cfg.CollectionOutputDir)
 

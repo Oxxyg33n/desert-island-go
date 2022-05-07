@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/Oxxyg33n/desert-island-go/configuration"
 	"github.com/Oxxyg33n/desert-island-go/model"
 	"github.com/juju/errors"
 	"github.com/rs/zerolog/log"
@@ -19,12 +20,12 @@ type IMetadata interface {
 var _ IMetadata = &metadata{}
 
 type metadata struct {
-	collectionOutputDir string
+	cfg configuration.Configuration
 }
 
-func NewMetadata(collectionOutputDir string) IMetadata {
+func NewMetadata(cfg configuration.Configuration) IMetadata {
 	return &metadata{
-		collectionOutputDir: collectionOutputDir,
+		cfg: cfg,
 	}
 }
 
@@ -38,13 +39,19 @@ func (s *metadata) Generate(imageIndex int, traits model.Traits) error {
 
 	sortERCTraits(erc721Traits)
 
-	b, err := json.MarshalIndent(erc721Traits, "", "	")
+	ercMetadata := model.NewERCMetadata(
+		s.cfg.CollectionName, s.cfg.CollectionDescription, "",
+		imageIndex,
+		erc721Traits,
+	)
+
+	b, err := json.MarshalIndent(ercMetadata, "", "	")
 	if err != nil {
 		return errors.Annotate(err, "marshalling json failed")
 	}
 
 	// Create traits file.
-	fileName := filepath.Join(s.collectionOutputDir, fmt.Sprintf("%d.json", imageIndex))
+	fileName := filepath.Join(s.cfg.CollectionOutputDir, "traits", fmt.Sprintf("%d.json", imageIndex))
 	if err := os.WriteFile(fileName, b, 0777); err != nil {
 		return errors.Annotate(err, "writing file failed")
 	}

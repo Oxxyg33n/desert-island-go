@@ -79,7 +79,7 @@ func (s *trait) Import(root string) error {
 		fileExtension := filepath.Ext(info.Name())
 
 		if fileExtension != ".png" {
-			return errors.New("file is not a .png")
+			return nil
 		}
 
 		splitted := strings.Split(path, "/")
@@ -171,9 +171,17 @@ func (s *trait) GetRandomTraits() (model.Traits, error) {
 			continue
 		}
 
+		if len(traits) == 0 {
+			continue
+		}
+
 		t, err := getRandomTrait(traits)
 		if err != nil {
 			return nil, errors.Annotate(err, "getting random trait failed")
+		}
+
+		if t == nil {
+			continue
 		}
 
 		randomTraits = append(randomTraits, *t)
@@ -209,6 +217,10 @@ func getRandomTrait(traits []model.Trait) (*model.Trait, error) {
 	pdf, err := getProbabilityDensityVector(traits)
 	if err != nil {
 		return nil, errors.Annotate(err, "getting probability density vector failed")
+	}
+
+	if pdf == nil {
+		return nil, nil
 	}
 
 	// get cdf
@@ -264,7 +276,8 @@ func getProbabilityDensityVector(traits []model.Trait) ([]float32, error) {
 	}
 
 	if err := checkProbabilityVector(probabilityVector); err != nil {
-		return nil, errors.Annotate(err, "checking probability vector failed")
+		//return nil, errors.Annotate(err, "checking probability vector failed")
+		return nil, nil
 	}
 
 	return probabilityVector, nil
