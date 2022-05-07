@@ -3,7 +3,6 @@ package pinata
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -90,10 +89,10 @@ func (s *pinata) uploadImage(f *file) error {
 		return errors.Annotate(err, "reading image file failed")
 	}
 
-	ipfsImageHash, err := s.pinFile(f.name, b)
-	if err != nil {
-		return errors.Annotate(err, "pinning file failed")
-	}
+	//ipfsImageHash, err := s.pinFile(f.name, b)
+	//if err != nil {
+	//	return errors.Annotate(err, "pinning file failed")
+	//}
 
 	b, err = ioutil.ReadFile(strings.Replace(f.path, ".png", ".json", 1))
 	if err != nil {
@@ -106,7 +105,7 @@ func (s *pinata) uploadImage(f *file) error {
 	}
 
 	erc721Metadata := &model.ERCMetadata{
-		Image:      fmt.Sprintf("ipfs://%s", ipfsImageHash),
+		//Image:      fmt.Sprintf("ipfs://%s", ipfsImageHash),
 		Attributes: ercTraits,
 	}
 
@@ -115,7 +114,7 @@ func (s *pinata) uploadImage(f *file) error {
 		return errors.Annotate(err, "")
 	}
 
-	filename := fmt.Sprintf("%s/%s.meta.json", s.inputDir, key)
+	filename := filepath.Join(s.inputDir, "metadata", key)
 	if err := os.WriteFile(filename, erc721MetadataBytes, 0777); err != nil {
 		return errors.Annotate(err, "writing file failed")
 	}

@@ -4,3 +4,5 @@ input/*
 output/*
 collection_configuration.json
 .env
+.DS_Store
+input/.DS_Store
